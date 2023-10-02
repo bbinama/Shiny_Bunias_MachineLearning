@@ -1,0 +1,112 @@
+---
+title: "Shiny_iris_MachineLerning"
+format: html
+editors: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+\`\`\`{# Importing libraries library(RCurl) \# for downloading the Bunias CSV file library(randomForest) \# building the model libr
+
+```{r}
+# Importing libraries
+#library(RCurl) # for downloading the Bunias CSV file
+library(randomForest) # building the model
+library(caret) # data spliting
+install.packages("readxl")
+library(readxl)
+```
+
+# Importing the Iris data set
+
+```{r}
+
+library(readr)
+
+Bunias1<- read_excel("Data_1.xls", sheet = 1)
+str(Bunias1$population)
+# Convert a column to factor with specific levels
+Bunias1$population <- factor(Bunias1$population, levels = c("01AL", "02T3", "03T4"," 04RO", "05LT","06CB","07JE","08WU","09DR","10DI","11GO","12PA"))
+Bunias1$fertilisation <- factor(Bunias1$fertilisation, levels = c("high", "low"))
+Bunias1$status <- factor(Bunias1$status, levels = c("native", "invasive","naturalised"))
+str(Bunias1)
+
+# If 'plant ID' is not needed, you can remove it
+#Bunias <- Bunias1[, !(names(Bunias1) %in% c("plant ID","population","fertilisation"))]
+
+Bunias <- Bunias1[, !(names(Bunias1) %in% c("plant ID"))]
+# Performs stratified random split of the data set
+TrainingIndex <- createDataPartition(Bunias$status, p=0.8, list = FALSE)
+TrainingSet <- Bunias[TrainingIndex,] # Training Set
+TestingSet <- Bunias[-TrainingIndex,] # Test Set
+write.csv(TrainingSet, "training.csv")
+write.csv(TestingSet, "testing.csv")
+
+TrainSet <- read.csv("training.csv", header = TRUE)
+TrainSet <- TrainSet[,-1]
+TrainSet$population <- factor(TrainSet$population, levels = c("01AL", "02T3", "03T4"," 04RO","05LT","06CB","07JE","08WU","09DR","10DI","11GO","12PA"))
+TrainSet$fertilisation <- factor(TrainSet$fertilisation, levels = c("high", "low"))
+TrainSet$status <- factor(TrainSet$status, levels = c("native", "invasive","naturalised"))
+str(TrainSet)
+#check missing value
+colSums(is.na(TrainSet))
+#remove missing value
+TrainSet <- na.omit(TrainSet)
+colSums(is.na(TrainSet))
+#
+str(TrainSet)
+# Example: Impute missing values with mean
+#TrainSet$variable_with_missing_values <- #ifelse(is.na(TrainSet$variable_with_missing_values), #mean(TrainSet$variable_with_missing_values, na.rm = TRUE), #TrainSet$variable_with_missing_values)
+
+
+
+```
+
+```{r}
+#Building a model
+# Rename the problematic column
+
+#population+fertilisation+ nLeaves1 + LongestLeaf1 + Glucosinolates1 + HsGlucosinolates1 + nPathogenSpots1 + nHerbivores1 + HsHerbivores1 + LeafHerbivory1Cons + nPredators1, 
+
+# Now you can create the random forest model
+model <- randomForest(status ~ population+fertilisation+ nLeaves1 + LongestLeaf1 + Glucosinolates1 + HsGlucosinolates1 + nPathogenSpots1 + nHerbivores1 + HsHerbivores1 + LeafHerbivory1Cons + nPredators1, data = TrainSet, ntree = 500, mtry = 11, importance = TRUE)
+
+#model <- randomForest(hjn,erdfas.factor (list(status= c("native","invasive","naturalised"))) ~ ., data = TrainSet, ntree = 500, mtry = 11, importance = TRUE)
+
+print(model)
+#You can extract feature importance using:
+importance(model)
+
+# You can also plot the importance of features using:
+varImpPlot(model)
+# Save model to RDS file
+saveRDS(model, "model.rds")
+
+
+```
+
+```         
+# Print the summary of the model
+print(rf_model)
+
+# Make predictions (optional)
+# predictions <- predict(rf_model, newdata = your_new_data_frame)
+
+# Note: Random factor (plot identification) is not explicitly used in the model, 
+# as random forests do not require specifying random factors like mixed-effects models do.
+# Random forests inherently handle different types of predictors without the need for specifying them explicitly.
+
+# You can extract feature importance using:
+# importance(rf_model)
+
+# You can also plot the importance of features using:
+# varImpPlot(rf_model)
+```
+
+# Building Random forest model
+
+```{r}
+
+```
